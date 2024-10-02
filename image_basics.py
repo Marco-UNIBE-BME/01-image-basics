@@ -131,7 +131,7 @@ def register_images(img, label_img, atlas_img):
     registered_label = registration_method.Resample(referenceImage=label_img, transform=transform, interpolator=sitkNearestNeighbor,
         defaultPixelValue=0.0, outputPixelType=img.GetPixelIDValue())  # todo: modify here
     return registered_img, registered_label
-
+#Acitvate Autograder
 
 def extract_feature_median(img):
     """

@@ -113,25 +113,37 @@ def register_images(img, label_img, atlas_img):
     # the registration returns the transformation of the moving image (parameter img) to the space of
     # the atlas image (atlas_img)
     """
+
+    # Using https://simpleitk.readthedocs.io/en/master/link_ImageRegistrationMethod1_docs.html
     registration_method = _get_registration_method(
         atlas_img, img
     )  # type: sitk.ImageRegistrationMethod
-    transform = registration_method.Execute(fixed=atlas_img, moving=img)  # todo: modify here
+    transform = registration_method.Execute(atlas_img, img)  # todo: modify here
 
     # todo: apply the obtained transform to register the image (img) to the atlas image (atlas_img)
     # hint: 'Resample' (with referenceImage=atlas_img, transform=transform, interpolator=sitkLinear,
     # defaultPixelValue=0.0, outputPixelType=img.GetPixelIDValue())
-    registered_img = registration_method.Resample(referenceImage=atlas_img, transform=transform, interpolator=sitkLinear,
-        defaultPixelValue=0.0, outputPixelType=img.GetPixelIDValue())  # todo: modify here
+
+    # https://simpleitk.readthedocs.io/en/master/link_ImageRegistrationMethod3_docs.html
+    resampler = sitk.ResampleImageFilter()
+    resampler.SetReferenceImage(atlas_img)
+    resampler.SetInterpolator(sitk.sitkLinear)
+    resampler.SetDefaultPixelValue(0.0)
+    resampler.SetTransform(transform)
+
+    resampled_img = resampler.Execute(img)
+    registered_img = sitk.Cast(resampled_img, img.GetPixelIDValue())
 
     # todo: apply the obtained transform to register the label image (label_img) to the atlas image (atlas_img), too
     # be careful with the interpolator type for label images!
     # hint: 'Resample' (with interpolator=sitkNearestNeighbor, defaultPixelValue=0.0,
     # outputPixelType=label_img.GetPixelIDValue())
-    registered_label = registration_method.Resample(referenceImage=label_img, transform=transform, interpolator=sitkNearestNeighbor,
-        defaultPixelValue=0.0, outputPixelType=img.GetPixelIDValue())  # todo: modify here
+
+    resampler.SetInterpolator(sitk.sitkNearestNeighbor)
+    resampled_label = resampler.Execute(label_img)
+    registered_label = sitk.Cast(resampled_label, label_img.GetPixelIDValue())  # todo: modify here
+    
     return registered_img, registered_label
-#Acitvate Autograder
 
 def extract_feature_median(img):
     """
